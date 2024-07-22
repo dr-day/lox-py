@@ -22,8 +22,8 @@ class TokenType(Enum):
     EQUAL_EQUAL = auto()
     GREATER = auto()
     GREATER_EQUAL = auto()
-    LESS = auto()
-    LESS_EQUAL = auto()
+    LESSER = auto()
+    LESSER_EQUAL = auto()
     
     # Literals.
     IDENTIFIER = auto()
@@ -67,13 +67,13 @@ simple_tokens = {
     "!": Token(TokenType.BANG),
     "=": Token(TokenType.EQUAL),
     ">": Token(TokenType.GREATER),
-    "<": Token(TokenType.LESS)
+    "<": Token(TokenType.LESSER)
 }
 something_equal_tokens = {
     "!": Token(TokenType.BANG_EQUAL),
     "=": Token(TokenType.EQUAL_EQUAL),
     ">": Token(TokenType.GREATER_EQUAL),
-    "<": Token(TokenType.LESS_EQUAL)
+    "<": Token(TokenType.LESSER_EQUAL)
 }
 
 keywords_map = {

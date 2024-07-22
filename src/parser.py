@@ -6,7 +6,7 @@ Star = namedtuple("Star", ["rule"])
 grammar = {
     'expression': 'equality',
     'equality': ['comparision', Star([( TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL ), 'comparision'])],
-    'comparision': ['term', Star([( TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL ), 'term'])],
+    'comparision': ['term', Star([( TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESSER, TokenType.LESSER_EQUAL ), 'term'])],
     'term': ['factor', Star([( TokenType.MINUS, TokenType.PLUS), 'factor'])],
     'factor': ['unary', Star([( TokenType.SLASH, TokenType.STAR ), 'unary'])],
     'unary': ('primary', [(TokenType.BANG, TokenType.MINUS), 'unary']),
@@ -54,7 +54,6 @@ def create_parser(tokens):
                 
         elif type(rule) is TokenType:
             if position < len(tokens) and (tokens[position].type == rule):
-#                result = (('token', tokens[position]),)
                 result = (tokens[position],)
                 position += 1
             else:
@@ -66,18 +65,15 @@ def create_parser(tokens):
 
         return position, result
     
-    def parser(rule):
-        position, result = parse_rule(0, rule)
+    def parser():
+        position, result = parse_rule(0, 'expression')
         if position >= len(tokens):
             print(f'Parser error: all tokens consumed by no End of File token found.')
             return None
         if tokens[position].type != TokenType.EOF:
             print(f'Parser error: tokens remain after parsing.')
             return None
-        return result
-
-
-    # simplify calling of parser so do not need to specify position or have it returned
+        return result[0]
     return parser
 
 
@@ -85,7 +81,7 @@ def create_parser(tokens):
 
 def print_parse_tree(parse_tree):
     indent = 0
-    for c in str(*parse_tree):
+    for c in str(parse_tree):
         if c == '(':
             indent +=1
         elif c == ')':
