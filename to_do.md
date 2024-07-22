@@ -1,0 +1,3 @@
+- Not currently using EOF token.
+- Everything so far has very little information when something goes wrong.
+- Evaluator needs to give errors instead of throwing python exceptions.
