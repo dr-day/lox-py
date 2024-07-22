@@ -1,9 +1,7 @@
-from tokens import TokenType
+from tokens import TokenType, Token
 from collections import namedtuple
 
 Star = namedtuple("Star", ["rule"])
-List = namedtuple("List", ["rule"])
-Option = namedtuple("Option", ["rule"])
 
 grammar = {
     'expression': 'equality',
@@ -30,45 +28,57 @@ def create_parser(tokens):
             result = ()
             for item in rule:
                 position, parse_item = parse_rule(position, item)
-                # ignore empty length lists.
-                if parse_item:
-                    result = (*result, *parse_item)
-                elif parse_item is None:
+                if parse_item: 
+                    result = (*result, *parse_item) # lists are expanded
+                elif parse_item is None: #Every item in a list must parse otherwise return None
                     result = None
                     break
 
         elif type(rule) is tuple:
             result = None
-            for option in rule:
+            for option in rule: #Find first option that parses
                 position, parse_option = parse_rule(position, option)
                 if parse_option:
                     result = parse_option
                     break
 
+        elif type(rule) is Star:
+            result = ()
+            while True: # repeat parsing rule until fails
+                check_position, check_result = parse_rule(position, rule.rule)
+                if not check_result:
+                    break
+                result = (*result, *check_result)
+                position = check_position
+            return position, result
+                
         elif type(rule) is TokenType:
-            if position < len(tokens) and (tokens[position][0] == rule):
-                result = (('token', tokens[position]),)
+            if position < len(tokens) and (tokens[position].type == rule):
+#                result = (('token', tokens[position]),)
+                result = (tokens[position],)
                 position += 1
             else:
                 result = None
-        elif type(rule) is Star:
-            result = ()
-            # print(f'checking starrule {rule.rule}')
-            while True:
-                check_position, check_result = parse_rule(position, rule.rule)
-                if check_result:
-                    result = (*result, *check_result)
-                    position = check_position
-                else:
-                    # print(f'returning {position}, {result}')
-                    return position, result
-            
+
         else:
             print(f'ERROR: unknown {type(rule)}')
+
+
         return position, result
+    
+    def parser(rule):
+        position, result = parse_rule(0, rule)
+        if position >= len(tokens):
+            print(f'Parser error: all tokens consumed by no End of File token found.')
+            return None
+        if tokens[position].type != TokenType.EOF:
+            print(f'Parser error: tokens remain after parsing.')
+            return None
+        return result
+
 
     # simplify calling of parser so do not need to specify position or have it returned
-    return lambda x: parse_rule(0, x)[1] 
+    return parser
 
 
 
@@ -77,11 +87,12 @@ def print_parse_tree(parse_tree):
     indent = 0
     for c in str(*parse_tree):
         if c == '(':
-            print("\n" + "  " * indent, end="")
             indent +=1
         elif c == ')':
             indent -=1
         print(c, end="")
+        if c == ",":
+            print("\n" + "  " * indent, end="")
     print("\n")
 
 

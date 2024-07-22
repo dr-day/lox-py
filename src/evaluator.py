@@ -1,29 +1,34 @@
 from tokens import TokenType
 
+binary_action_lookup ={
+    TokenType.STAR: lambda x, y: x * y,
+    TokenType.SLASH: lambda x, y: x / y,
+    TokenType.PLUS: lambda x, y: x + y,
+    TokenType.MINUS: lambda x, y: x - y
+
+}
+
+
 def evaluate(tree):
     rule = tree[0]
-    print(f'{rule}, {len(tree)}')
     if rule == 'expression':
         return evaluate(tree[1])
     elif rule in ('equality', 'comparision', 'term', 'factor'):
         left_op = evaluate(tree[1])
         for i in range(2, len(tree), 2):
             action = tree[i]
-            action_token = action[1][0]
             right_op = evaluate(tree[i + 1])
-            if action_token == TokenType.STAR:
-                left_op = left_op * right_op
+            left_op = binary_action_lookup[action.type](left_op, right_op)
         return left_op
     elif rule == 'unary':
         if len(tree) == 2:
             return evaluate(tree[1])
         else: # must be length 3
             action = tree[1]
-            action_token = action[1][0]
-            if action_token == TokenType.MINUS:
+            if action.type == TokenType.MINUS:
                 return -evaluate(tree[2])
     elif rule == 'primary':
-        first_token = tree[1][1]
+        first_token = tree[1]
         if first_token.type == TokenType.NUMBER:
             return float(first_token.value)
     else:

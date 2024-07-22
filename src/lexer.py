@@ -4,49 +4,51 @@ class Scanner:
     def __init__(this, source):
         this.source = source
 
-    def atEnd(this):
-        return this.current == len(this.source)
-    
+    def moreToScan(this):
+        return this.current < len(this.source)
+
+    def peek(this):
+        return(this.source[this.current])
+
+    def peekNext(this):
+        return(this.source[this.current + 1])
+
     def advance(this):
         next = this.source[this.current]
         this.current += 1
         return next
 
-    def peek(this):
-        return(this.source[this.current])
-
     def match(this, check):
-        if this.atEnd():
-            return False
-        are_same = check == this.source[this.current]
-        if are_same:
+        if this.moreToScan() and check == this.source[this.current]:
             this.current += 1
-        return are_same
+            return True
+        else:
+            return False
     
     def consume_string_literal(this):
         literal_start = this.current
-        while (not this.atEnd()) and this.peek() !='"':
+        while this.moreToScan() and this.peek() !='"':
             if this.peek() == '\n':
                 this.line += 1
             this.advance()
-        if this.atEnd():
+        if not this.moreToScan():
             error(this.line, "Unterminated string")
         this.advance()
         return this.source[literal_start: this.current - 1]
 
     def consume_number_literal(this):
         literal_start = this.current
-        while (not this.atEnd()) and check_digit(this.peek()):
+        while this.moreToScan() and check_digit(this.peek()):
             this.advance()
-        if this.current + 2 <= len(this.source) and this.peek() =="." and check_digit(this.source[this.current + 1]):
+        if this.current + 2 <= len(this.source) and this.peek() =="." and check_digit(this.peekNext()):
             this.advance()
-            while (not this.atEnd()) and check_digit(this.peek()):
+            while this.moreToScan() and check_digit(this.peek()):
                 this.advance()
         return this.source[literal_start - 1: this.current]
     
     def consume_identifier(this):
         literal_start = this.current
-        while (not this.atEnd()) and (check_identifier(this.peek()) or check_digit(this.peek())):
+        while this.moreToScan() and (check_identifier(this.peek()) or check_digit(this.peek())):
             this.advance()
         return this.source[literal_start - 1: this.current]
     
@@ -55,17 +57,16 @@ class Scanner:
         this.line = 1
         this.tokens = []
 
-        while not this.atEnd():
+        while this.moreToScan():
             next = this.advance()
             if next.isspace():
                 if next == "\n":
                     this.line += 1
                 continue
 
-            # check for double character symbols like != 
-            # comments
+            # comments (start with // and continue to end of line)
             if next =="/" and this.match("/"): 
-                while not this.atEnd() and this.peek() != "\n":
+                while this.moreToScan() and this.peek() != "\n":
                     this.advance()
                 continue
 
@@ -96,10 +97,9 @@ class Scanner:
                 continue
 
 
-
-            error(this.line, f"unexpected {next}")
+            error(this.line, f"Lexer error: unexpected {next}")
         
-        this.tokens.append((TokenType.EOF,))
+        this.tokens.append(Token(TokenType.EOF))
         return this.tokens
 
 
@@ -124,7 +124,7 @@ source = """
 "this" != "test";
 <=  // stuff
 /* 09 - 88
-6786. 7.89 ?
+6786. 7.89 
 iouoi_sdf = dsffd
 true or false
 """
