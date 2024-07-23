@@ -93,7 +93,7 @@ class Scanner:
                 if literal in keywords_map:
                     this.tokens.append(keywords_map[literal],)
                 else:
-                    this.tokens.append(Token(TokenType.STRING, literal))
+                    this.tokens.append(Token(TokenType.IDENTIFIER, literal))
                 continue
 
 

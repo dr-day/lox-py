@@ -10,5 +10,6 @@ while True:
     scanner = Scanner(source)
     tokens = scanner.scanTokens()
     parser = create_parser(tokens)
-    tree = parser('expression')
-    print(evaluate(tree[0]))
+    tree = parser()
+    if tree:
+        evaluate(tree)

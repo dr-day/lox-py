@@ -1,4 +1,4 @@
-from tokens import TokenType
+from tokens import TokenType, Token
 
 def plus_action(x, y):
     if type(x) == type(y) and type(x) in (float, str):
@@ -35,11 +35,51 @@ binary_action_lookup ={
 def truth_of(x): 
     return bool(x) #will change in future to match lox's truthiness definiton
 
+class Environment:
+    def __init__(self):
+        self.data = dict()
+
+    def add(self, index):
+        self.data[index] = None
+
+    def __setitem__(self, index, value):
+        if index in self.data.keys():
+            self.data[index] = value
+        else:
+            raise ValueError(f'{index} variable not defined')
+        
+    def __getitem__(self, index):
+        if index in self.data.keys():
+            return self.data[index]
+        else:
+            raise ValueError(f'{index} variable not found')
+
+global_env = Environment()
+
 def evaluate(tree):
     try:
         rule = tree[0]
-        if rule == 'expression':
+        if rule == 'program':
+            for subrule in tree[1:]:
+                if not (type(subrule) == Token and subrule.type == TokenType.EOF):
+                    evaluate(subrule)
+        elif rule in ('declaration', 'statement', 'expression', 'exprStmt'):
             return evaluate(tree[1])
+        elif rule == 'assignment':
+            if len(tree) == 2:
+                return evaluate(tree[1])
+            else:
+                var_name = tree[1].value
+                global_env[var_name] = evaluate(tree[3])
+        elif rule == 'varDecl':
+            var_name = tree[2].value
+            global_env.add(var_name)
+            if len(tree) == 6:
+                global_env[var_name] = evaluate(tree[4])
+            else:
+                global_env[var_name] = None
+        elif rule == 'printStmt':
+            print(evaluate(tree[2]))
         elif rule in ('equality', 'comparision', 'term', 'factor'):
             left_op = evaluate(tree[1])
             for i in range(2, len(tree), 2):
@@ -62,6 +102,8 @@ def evaluate(tree):
                 return float(first_token.value)
             elif (first_token.type == TokenType.STRING):
                 return str(first_token.value)
+            elif (first_token.type == TokenType.IDENTIFIER):
+                return global_env[first_token.value]
             elif first_token.type == TokenType.TRUE:
                 return True
             elif first_token.type == TokenType.FALSE:
