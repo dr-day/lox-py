@@ -35,12 +35,15 @@ binary_action_lookup ={
 def truth_of(x): 
     return bool(x) #will change in future to match lox's truthiness definiton
 
-class Environment:
+class Scope:
     def __init__(self):
         self.data = dict()
 
     def add(self, index):
         self.data[index] = None
+
+    def contains(self, index):
+        return index in self.data.keys()
 
     def __setitem__(self, index, value):
         if index in self.data.keys():
@@ -54,15 +57,50 @@ class Environment:
         else:
             raise ValueError(f'{index} variable not found')
 
-global_env = Environment()
+class Environment:
+    def __init__(self):
+        self.scopes = [Scope()]
+    
+    def enter_scope(self):
+        self.scopes.append(Scope())
+
+    def exit_scope(self):
+        self.scopes.pop()
+
+    def add(self, index):
+        print(f'adding {index}')
+        self.scopes[-1].add(index)
+
+    def __setitem__(self, index, value):
+        for scope in reversed(self.scopes):
+            if scope.contains(index):
+                scope[index] = value
+                return
+        raise ValueError(f'{index} variable not defined')
+        
+    def __getitem__(self, index):
+        for scope in reversed(self.scopes):
+            if scope.contains(index):
+                return scope[index]
+        raise ValueError(f'{index} variable not found')
+
+
+environment = Environment()
 
 def evaluate(tree):
+    #print(environment.scopes[-1].data)
+
     try:
         rule = tree[0]
         if rule == 'program':
             for subrule in tree[1:]:
                 if not (type(subrule) == Token and subrule.type == TokenType.EOF):
                     evaluate(subrule)
+        elif rule == 'block':
+            environment.enter_scope()
+            for i in range(2, len(tree) - 1):
+                evaluate(tree[i])
+            environment.exit_scope()
         elif rule in ('declaration', 'statement', 'expression', 'exprStmt'):
             return evaluate(tree[1])
         elif rule == 'assignment':
@@ -70,14 +108,14 @@ def evaluate(tree):
                 return evaluate(tree[1])
             else:
                 var_name = tree[1].value
-                global_env[var_name] = evaluate(tree[3])
+                environment[var_name] = evaluate(tree[3])
         elif rule == 'varDecl':
             var_name = tree[2].value
-            global_env.add(var_name)
+            environment.add(var_name)
             if len(tree) == 6:
-                global_env[var_name] = evaluate(tree[4])
+                environment[var_name] = evaluate(tree[4])
             else:
-                global_env[var_name] = None
+                environment[var_name] = None
         elif rule == 'printStmt':
             print(evaluate(tree[2]))
         elif rule in ('equality', 'comparision', 'term', 'factor'):
@@ -103,7 +141,7 @@ def evaluate(tree):
             elif (first_token.type == TokenType.STRING):
                 return str(first_token.value)
             elif (first_token.type == TokenType.IDENTIFIER):
-                return global_env[first_token.value]
+                return environment[first_token.value]
             elif first_token.type == TokenType.TRUE:
                 return True
             elif first_token.type == TokenType.FALSE:
