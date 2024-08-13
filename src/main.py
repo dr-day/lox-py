@@ -17,6 +17,13 @@ var x=2;
 }
 print x;
 if (x > 8) print "hi"; else print "bye";
+print true and 9 and "hi";
+print false or 0 or "love";
+var y = 2;
+while (y < 5) {
+    print y;
+    y = y +1;
+}
 """
 scanner = Scanner(source)
 tokens = scanner.scanTokens()

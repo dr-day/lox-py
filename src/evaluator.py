@@ -158,6 +158,25 @@ def evaluate(tree):
                 return evaluate(tree[7])
             else:
                 return None
+        elif rule == 'logic_or':
+            i = 1
+            while True:
+                left_op = evaluate(tree[i])
+                i += 2
+                if truth_of(left_op) or i >= len(tree):
+                    return left_op
+        elif rule == 'logic_and':
+            i = 1
+            while True:
+                left_op = evaluate(tree[i])
+                i += 2
+                if not truth_of(left_op) or i >= len(tree):
+                    return left_op
+        elif rule == 'whileStmt':
+            while truth_of(evaluate(tree[3])):
+                evaluate(tree[5])
+            return None
+
         else:
             print(f"error no action for {rule}")
     except (ValueError, TypeError) as error:
