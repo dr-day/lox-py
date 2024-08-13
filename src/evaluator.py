@@ -151,6 +151,13 @@ def evaluate(tree):
             elif first_token.type == TokenType.LEFT_PAREN:
                 return evaluate(tree[2])
             print(f"Evaluate error: primary token {first_token} no found.")
+        elif rule == 'ifStmt':
+            if truth_of(evaluate(tree[3])):
+                return evaluate(tree[5])
+            elif len(tree) == 8:
+                return evaluate(tree[7])
+            else:
+                return None
         else:
             print(f"error no action for {rule}")
     except (ValueError, TypeError) as error:

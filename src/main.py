@@ -16,12 +16,13 @@ var x=2;
     print x;
 }
 print x;
+if (x > 8) print "hi"; else print "bye";
 """
 scanner = Scanner(source)
 tokens = scanner.scanTokens()
-#print(tokens)
+print(tokens)
 
 parser = create_parser(tokens)
 tree = parser()
-#print_parse_tree(tree)
+print_parse_tree(tree)
 evaluate(tree)
