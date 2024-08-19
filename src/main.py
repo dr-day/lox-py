@@ -1,6 +1,7 @@
 from lexer import Scanner
 from parser import create_parser, print_parse_tree
 from evaluator import evaluate
+from simplifier import simplifier, desugar
 
 #source = 'print 9+8;print 1+2;'
 source = """
@@ -25,11 +26,55 @@ while (y < 5) {
     y = y +1;
 }
 """
+
+# source = """
+# var a = 0;
+# var temp;
+
+# for (var b = 1; a < 10000; b = temp + b) {
+#   print a;
+#   temp = a;
+#   a = b;
+# }
+# #  """
+
+
+
+source = """
+for (var x =1; x <4; x = x + 1) print x;
+ """
+source = """
+var x = 1;
+for (; x <4; x = x + 1) print x;
+ """
+
+
+source = """
+for (var x = 1; ; x = x + 1) print x;
+ """
+
+source = """
+for (var x = 1; x < 5; ){
+ print x;
+ x = x + 1;
+ }
+"""
+
+# source = """
+# var x = 1;
+# while (x < 3) {
+#  x = x+1;
+#  }
+# """
+
 scanner = Scanner(source)
 tokens = scanner.scanTokens()
-print(tokens)
+#print(tokens)
 
 parser = create_parser(tokens)
 tree = parser()
-print_parse_tree(tree)
-evaluate(tree)
+stree = desugar(tree)
+stree = simplifier(stree)
+
+# print_parse_tree(stree)
+evaluate(stree)
