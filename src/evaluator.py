@@ -1,4 +1,5 @@
 from tokens import TokenType, Token
+import time
 
 def plus_action(x, y):
     if type(x) == type(y) and type(x) in (float, str):
@@ -86,6 +87,8 @@ class Environment:
 
 
 environment = Environment()
+environment.add('clock')
+environment['clock'] = lambda : time.time()
 
 def evaluate(tree):
     #print(environment.scopes[-1].data)
@@ -176,7 +179,8 @@ def evaluate(tree):
             while truth_of(evaluate(tree[3])):
                 evaluate(tree[5])
             return None
-
+        elif rule =='call':
+            return evaluate(tree[1])() 
         else:
             print(f"error no action for {rule}")
     except (ValueError, TypeError) as error:

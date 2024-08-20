@@ -54,10 +54,12 @@ for (var x = 1; ; x = x + 1) print x;
  """
 
 source = """
-for (var x = 1; x < 5; ){
+var t = clock();
+for (var x = 1; x < 500; ){
  print x;
  x = x + 1;
  }
+ print clock() - t;
 """
 
 # source = """
@@ -76,5 +78,5 @@ tree = parser()
 stree = desugar(tree)
 stree = simplifier(stree)
 
-# print_parse_tree(stree)
+print_parse_tree(stree)
 evaluate(stree)

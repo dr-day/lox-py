@@ -27,7 +27,9 @@ grammar = {
     'comparision': ['term', Star([( TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESSER, TokenType.LESSER_EQUAL ), 'term'])],
     'term': ['factor', Star([( TokenType.MINUS, TokenType.PLUS), 'factor'])],
     'factor': ['unary', Star([( TokenType.SLASH, TokenType.STAR ), 'unary'])],
-    'unary': ('primary', [(TokenType.BANG, TokenType.MINUS), 'unary']),
+    'unary': ('call', [(TokenType.BANG, TokenType.MINUS), 'unary']),
+    'call': ['primary', Option([TokenType.LEFT_PAREN, Option('arguments'), TokenType.RIGHT_PAREN]) ],
+    'arguments': ['expression', Star([TokenType.COMMA, 'expression'])],
     'primary': (TokenType.NUMBER, TokenType.IDENTIFIER, TokenType.STRING, TokenType.TRUE, TokenType.FALSE, TokenType.NIL, 
                 [TokenType.LEFT_PAREN, 'expression', TokenType.RIGHT_PAREN])
 }
